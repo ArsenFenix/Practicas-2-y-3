@@ -115,16 +115,37 @@ def ejecutar_operacion():
         mostrar_imagen(resultado, panel_resultado, es_resultado=True)
 
     elif opcion == "Lógicas":
-        if img2 is None:
-            messagebox.showerror("Error", "Cargue la segunda imagen.")
+        if img1 is None:
+            messagebox.showerror("Error", "Cargue al menos una imagen para la operación lógica.")
             return
+
+        # Convertir la primera imagen a binaria
         _, bin1 = cv2.threshold(img1, 127, 255, cv2.THRESH_BINARY)
-        _, bin2 = cv2.threshold(img2, 127, 255, cv2.THRESH_BINARY)
-        and_img = cv2.bitwise_and(bin1, bin2)
-        or_img = cv2.bitwise_or(bin1, bin2)
-        xor_img = cv2.bitwise_xor(bin1, bin2)
-        resultado = np.hstack((and_img, or_img, xor_img))
+
+        # Inicializar resultados vacíos
+        and_img = np.zeros_like(bin1)
+        or_img = np.zeros_like(bin1)
+        xor_img = np.zeros_like(bin1)
+
+        # Si hay segunda imagen, también la binariza y redimensiona
+        if img2 is not None:
+            img2_rz = cv2.resize(img2, (img1.shape[1], img1.shape[0]))
+            _, bin2 = cv2.threshold(img2_rz, 127, 255, cv2.THRESH_BINARY)
+
+            # Operaciones lógicas
+            and_img = cv2.bitwise_and(bin1, bin2)
+            or_img = cv2.bitwise_or(bin1, bin2)
+            xor_img = cv2.bitwise_xor(bin1, bin2)
+
+        # Negado lógico de la primera imagen
+        not_img = cv2.bitwise_not(bin1)
+
+        # Combinar resultados horizontalmente
+        resultado = np.hstack((and_img, or_img, xor_img, not_img))
+
+        # Mostrar resultado en la interfaz
         mostrar_imagen(resultado, panel_resultado, es_resultado=True)
+
         
     elif opcion == "Relacionales":
         if img1 is None or img2 is None:
